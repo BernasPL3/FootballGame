@@ -1,0 +1,45 @@
+name: Build Football Game Intel
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install SDL2
+        run: brew install sdl2
+
+      - name: Configure
+        run: |
+          cmake -B build \
+            -DCMAKE_OSX_ARCHITECTURES=x86_64
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Create App Bundle
+        run: |
+          mkdir -p FootballGame.app/Contents/MacOS
+          mkdir -p FootballGame.app/Contents/Resources
+
+          cp build/FootballGame FootballGame.app/Contents/MacOS/
+          cp Info.plist FootballGame.app/Contents/
+
+      - name: Verify Architecture
+        run: |
+          file FootballGame.app/Contents/MacOS/FootballGame
+
+      - name: Create ZIP
+        run: |
+          zip -r FootballGame-Intel.zip FootballGame.app
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: FootballGame-Intel
+          path: FootballGame-Intel.zip
